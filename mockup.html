@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rankings Revamp — UI Simulation</title>
+<style>
+  :root {
+    --gold-highlight: #FFF8E1;
+    --gold-border: #FFD54F;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-500: #6B7280;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --green: #16A34A;
+    --red: #DC2626;
+    --blue: #2563EB;
+    --bronze: #CD7F32;
+    --silver: #94A3B8;
+    --gold-tier: #EAB308;
+    --platinum: #6366F1;
+    --diamond: #06B6D4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    color: var(--gray-900);
+    background: #fff;
+    line-height: 1.4;
+  }
+  .page-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* TOP NAV */
+  .top-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .top-nav-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between; height: 56px;
+  }
+  .top-nav .logo { font-weight: 700; font-size: 15px; color: var(--blue); }
+  .nav-pills { display: flex; gap: 4px; }
+  .nav-pill {
+    background: none; border: none; padding: 8px 14px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; color: var(--gray-500); cursor: pointer;
+  }
+  .nav-pill:hover { background: var(--gray-100); color: var(--gray-700); }
+  .nav-pill.active { background: var(--blue); color: #fff; }
+
+  /* SECTION HEADERS */
+  .section { padding: 64px 0 48px; }
+  .section-eyebrow {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--blue); margin-bottom: 8px;
+  }
+  .section-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .section-desc { font-size: 15px; color: var(--gray-500); max-width: 600px; margin-bottom: 36px; line-height: 1.6; }
+
+  /* COMPARISON LAYOUT */
+  .compare-row {
+    display: flex; gap: 48px; justify-content: center; align-items: flex-start;
+    margin-bottom: 48px;
+  }
+  .compare-side { display: flex; flex-direction: column; align-items: center; }
+  .compare-label {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 16px; padding: 6px 16px;
+    border-radius: 20px;
+  }
+  .compare-label.current { background: #FEE2E2; color: #991B1B; }
+  .compare-label.proposed { background: #D1FAE5; color: #065F46; }
+  .compare-vs {
+    display: flex; align-items: center; font-size: 20px; font-weight: 700;
+    color: var(--gray-300); padding-top: 220px;
+  }
+  .compare-caption {
+    margin-top: 16px; max-width: 340px; text-align: center;
+    font-size: 13px; color: var(--gray-500); line-height: 1.5;
+  }
+  .compare-caption strong { color: var(--gray-900); }
+
+  /* PHONE FRAME */
+  .phone {
+    width: 375px;
+    border: 2px solid var(--gray-200);
+    border-radius: 40px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 24px 0; font-size: 15px; font-weight: 600;
+  }
+  .status-bar .time { font-size: 15px; font-weight: 600; }
+  .status-icons { display: flex; gap: 4px; align-items: center; font-size: 12px; }
+
+  /* APP HEADER */
+  .app-header {
+    display: flex; justify-content: center; gap: 16px; padding: 12px 24px 4px;
+  }
+  .app-header .back { font-size: 20px; color: var(--gray-900); }
+  .app-header .gear { font-size: 18px; color: var(--gray-900); }
+
+  .group-name {
+    text-align: center; font-size: 22px; font-weight: 700;
+    padding: 8px 24px 4px;
+  }
+
+  /* TIER BADGE (for league version) */
+  .tier-badge-row {
+    display: flex; justify-content: center; margin-bottom: 2px;
+  }
+  .tier-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .tier-badge.bronze { background: #FEF3C7; color: #92400E; }
+  .tier-badge.silver { background: #F1F5F9; color: #475569; }
+  .tier-badge.gold { background: #FEF9C3; color: #854D0E; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex; justify-content: center; gap: 0; padding: 8px 24px 12px;
+  }
+  .stat-item {
+    text-align: center; padding: 0 16px;
+    border-right: 1px solid var(--gray-200);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-item .val { font-size: 16px; font-weight: 700; }
+  .stat-item .lbl { font-size: 11px; color: var(--gray-400); }
+
+  /* TIME TABS */
+  .time-tabs {
+    display: flex; gap: 0; padding: 8px 24px; justify-content: center;
+  }
+  .time-tab {
+    padding: 8px 18px; font-size: 13px; font-weight: 500; color: var(--gray-500);
+    border: 1px solid var(--gray-200); background: #fff; cursor: default;
+  }
+  .time-tab:first-child { border-radius: 20px 0 0 20px; }
+  .time-tab:last-child { border-radius: 0 20px 20px 0; }
+  .time-tab.active {
+    background: var(--gray-900); color: #fff; border-color: var(--gray-900);
+  }
+
+  /* TOP 3 CAROUSEL */
+  .top3 {
+    display: flex; justify-content: center; align-items: flex-end;
+    padding: 20px 24px 8px; gap: 8px;
+  }
+  .top3-card { text-align: center; width: 100px; }
+  .top3-card.first {
+    width: 120px; padding: 12px 8px; background: var(--gold-highlight);
+    border: 2px solid var(--gold-border); border-radius: 16px;
+    margin-bottom: -4px;
+  }
+  .top3-card .trophy { font-size: 20px; margin-bottom: 2px; }
+  .top3-card.first .trophy { font-size: 24px; }
+  .top3-card .avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--gray-200); margin: 0 auto 4px; display: flex;
+    align-items: center; justify-content: center; font-size: 20px;
+  }
+  .top3-card.first .avatar { width: 56px; height: 56px; font-size: 24px; }
+  .top3-card .dog { font-size: 13px; font-weight: 600; }
+  .top3-card .steps-val { font-size: 12px; color: var(--gray-500); display: flex; align-items: center; justify-content: center; gap: 2px; }
+  .top3-card .owner { font-size: 10px; color: var(--gray-400); }
+  .paw { font-size: 10px; }
+
+  /* MORE DOGS */
+  .more-dogs {
+    text-align: center; padding: 10px; font-size: 12px; color: var(--gray-400);
+  }
+
+  /* LEADERBOARD */
+  .lb-list { padding: 0 16px 16px; }
+  .lb-item {
+    display: flex; align-items: center; padding: 12px 12px;
+    background: var(--gray-50); border-radius: 12px; margin-bottom: 6px; gap: 12px;
+  }
+  .lb-item.highlighted {
+    background: var(--gold-highlight); border: 1.5px solid var(--gold-border);
+  }
+  .lb-item.promote-zone {
+    background: #F0FDF4;
+  }
+  .lb-item.demote-zone {
+    background: #FEF2F2;
+  }
+  .lb-item .lb-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--gray-200); display: flex; align-items: center;
+    justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .lb-item .lb-info { flex: 1; }
+  .lb-item .lb-name { font-size: 14px; font-weight: 600; }
+  .lb-item .lb-owner { font-size: 11px; color: var(--gray-400); }
+  .lb-item .lb-right { text-align: right; }
+  .lb-item .lb-rank { font-size: 12px; color: var(--gray-400); font-weight: 600; }
+  .lb-item .lb-steps { font-size: 13px; font-weight: 600; }
+  .lb-item .lb-unit { font-size: 11px; color: var(--gray-400); }
+
+  /* ZONE INDICATOR */
+  .zone-dot {
+    width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-left: 4px;
+  }
+  .zone-dot.up { background: var(--green); }
+  .zone-dot.down { background: var(--red); }
+
+  /* ELLIPSIS ROW */
+  .lb-ellipsis {
+    text-align: center; padding: 8px; font-size: 12px; color: var(--gray-400);
+  }
+
+  /* NOTIFICATION MOCKUP */
+  .notif-mockup {
+    margin: 0 auto; max-width: 375px;
+    border: 1px solid var(--gray-200); border-radius: 16px;
+    padding: 14px 16px; background: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .notif-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--gray-100); display: flex; align-items: center;
+    justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .notif-content { flex: 1; }
+  .notif-app { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.04em; }
+  .notif-text { font-size: 13px; color: var(--gray-900); line-height: 1.4; }
+  .notif-time { font-size: 11px; color: var(--gray-400); }
+
+  /* SCENARIO STEPS */
+  .scenario-steps {
+    display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+    margin-top: 32px;
+  }
+  .scenario-step {
+    text-align: center; max-width: 200px;
+  }
+  .scenario-step .step-num {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff;
+    font-size: 13px; font-weight: 700; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 8px;
+  }
+  .scenario-step .step-text { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+
+  /* WEEK PROGRESSION */
+  .week-progression {
+    display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  /* CALLOUT */
+  .callout {
+    padding: 16px 20px; border-radius: 12px; font-size: 14px; line-height: 1.6;
+    margin-bottom: 24px; max-width: 800px;
+  }
+  .callout.problem { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+  .callout.solution { background: #F0FDF4; border: 1px solid #A7F3D0; color: #065F46; }
+
+  /* FOOTER */
+  .page-footer {
+    text-align: center; padding: 48px 24px; font-size: 13px; color: var(--gray-400);
+    border-top: 1px solid var(--gray-100);
+  }
+
+  @media (max-width: 900px) {
+    .compare-row { flex-direction: column; align-items: center; gap: 32px; }
+    .compare-vs { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <div class="logo">Rankings Revamp</div>
+    <div class="nav-pills">
+      <button class="nav-pill active" onclick="navTo('today')">Today's Experience</button>
+      <button class="nav-pill" onclick="navTo('leagues')">With Leagues</button>
+      <button class="nav-pill" onclick="navTo('journey')">Week by Week</button>
+      <button class="nav-pill" onclick="navTo('moments')">Engagement Moments</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ========================================= -->
+<!-- SECTION 1: SIDE BY SIDE COMPARISON        -->
+<!-- ========================================= -->
+<section class="section" id="today">
+  <div class="page-container">
+    <div class="section-eyebrow">The Problem</div>
+    <div class="section-title">What Users See Today</div>
+    <div class="section-desc">821 dogs in one flat list. You're #347. You gained 30K steps this week and moved to #340. It doesn't feel like anything.</div>
+
+    <div class="compare-row">
+      <div class="compare-side">
+        <div class="compare-label current">Today</div>
+        <div class="phone">
+          <div class="status-bar">
+            <span class="time">9:41</span>
+            <span class="status-icons">&#9679;&#9679;&#9679;&#9679; &#9681; &#128267;</span>
+          </div>
+          <div class="app-header">
+            <span class="back">&lsaquo;</span>
+            <span class="gear">&#9881;</span>
+          </div>
+          <div class="group-name">Brooklyn Dogs</div>
+          <div class="stats-row">
+            <div class="stat-item"><div class="val">631,601</div><div class="lbl">January steps</div></div>
+            <div class="stat-item"><div class="val">821</div><div class="lbl">Dogs</div></div>
+            <div class="stat-item"><div class="val">134</div><div class="lbl">January miles</div></div>
+          </div>
+          <div class="time-tabs">
+            <div class="time-tab active">Last 7 days</div>
+            <div class="time-tab">Last 30 days</div>
+            <div class="time-tab">All time</div>
+          </div>
+          <div class="top3">
+            <div class="top3-card">
+              <div class="trophy">&#x1F948;</div>
+              <div class="avatar">&#x1F436;</div>
+              <div class="dog">Zeus</div>
+              <div class="steps-val"><span class="paw">&#x1F43E;</span> 298,219</div>
+            </div>
+            <div class="top3-card first">
+              <div class="trophy">&#x1F3C6;</div>
+              <div class="avatar">&#x1F415;</div>
+              <div class="dog">MaxPower</div>
+              <div class="steps-val"><span class="paw">&#x1F43E;</span> 341,005</div>
+            </div>
+            <div class="top3-card">
+              <div class="trophy">&#x1F949;</div>
+              <div class="avatar">&#x1F9AE;</div>
+              <div class="dog">Turbo</div>
+              <div class="steps-val"><span class="paw">&#x1F43E;</span> 276,887</div>
+            </div>
+          </div>
+          <div class="more-dogs">815 more dogs</div>
+          <div class="lb-list">
+            <div class="lb-ellipsis">&middot;&middot;&middot;</div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F436;</div>
+              <div class="lb-info"><div class="lb-name">Cooper</div><div class="lb-owner">@cooper-dad</div></div>
+              <div class="lb-right"><div class="lb-rank">#346</div><div class="lb-steps">29,112</div><div class="lb-unit">Avg steps/day</div></div>
+            </div>
+            <div class="lb-item highlighted">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div><div class="lb-owner">@watson-golden</div></div>
+              <div class="lb-right"><div class="lb-rank">#347</div><div class="lb-steps">28,920</div><div class="lb-unit">Avg steps/day</div></div>
+            </div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F9AE;</div>
+              <div class="lb-info"><div class="lb-name">Maple</div><div class="lb-owner">@maple-retriever</div></div>
+              <div class="lb-right"><div class="lb-rank">#348</div><div class="lb-steps">28,845</div><div class="lb-unit">Avg steps/day</div></div>
+            </div>
+            <div class="lb-ellipsis">&middot;&middot;&middot; 473 more dogs below</div>
+          </div>
+        </div>
+        <div class="compare-caption">
+          <strong>Watson is #347 of 821.</strong> He gained 30K steps this week and moved up 7 spots. The top 3 dogs have 10x his steps. There's no path to the top. No reason to check back.
+        </div>
+      </div>
+
+      <div class="compare-vs">vs</div>
+
+      <div class="compare-side" id="leagues">
+        <div class="compare-label proposed">With Leagues</div>
+        <div class="phone">
+          <div class="status-bar">
+            <span class="time">9:41</span>
+            <span class="status-icons">&#9679;&#9679;&#9679;&#9679; &#9681; &#128267;</span>
+          </div>
+          <div class="app-header">
+            <span class="back">&lsaquo;</span>
+            <span class="gear">&#9881;</span>
+          </div>
+          <div class="group-name">Austin Golden Retrievers</div>
+          <div class="tier-badge-row">
+            <span class="tier-badge bronze">&#x1F949; Bronze League</span>
+          </div>
+          <div class="stats-row">
+            <div class="stat-item"><div class="val">3.2M</div><div class="lbl">Weekly steps</div></div>
+            <div class="stat-item"><div class="val">41</div><div class="lbl">Dogs</div></div>
+            <div class="stat-item"><div class="val">Week 1</div><div class="lbl">Jan 19&ndash;25</div></div>
+          </div>
+          <div class="time-tabs">
+            <div class="time-tab active">This week</div>
+            <div class="time-tab">Monthly</div>
+            <div class="time-tab">All time</div>
+          </div>
+          <div class="top3">
+            <div class="top3-card">
+              <div class="trophy">&#x1F948;</div>
+              <div class="avatar">&#x1F415;</div>
+              <div class="dog">Telli</div>
+              <div class="steps-val"><span class="paw">&#x1F43E;</span> 205,658</div>
+            </div>
+            <div class="top3-card first">
+              <div class="trophy">&#x1F3C6;</div>
+              <div class="avatar">&#x1F415;</div>
+              <div class="dog">Finn</div>
+              <div class="steps-val"><span class="paw">&#x1F43E;</span> 244,055</div>
+            </div>
+            <div class="top3-card">
+              <div class="trophy">&#x1F949;</div>
+              <div class="avatar">&#x1F415;</div>
+              <div class="dog">Winnie B</div>
+              <div class="steps-val"><span class="paw">&#x1F43E;</span> 194,077</div>
+            </div>
+          </div>
+          <div class="more-dogs">34 more dogs &middot; Top 20% promote <span class="zone-dot up"></span></div>
+          <div class="lb-list">
+            <div class="lb-item promote-zone">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Bowie</div><div class="lb-owner">@bowie-golden</div></div>
+              <div class="lb-right"><div class="lb-rank">#4 <span class="zone-dot up"></span></div><div class="lb-steps">161,996</div><div class="lb-unit">steps this week</div></div>
+            </div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">River</div><div class="lb-owner">@river-retriever</div></div>
+              <div class="lb-right"><div class="lb-rank">#5</div><div class="lb-steps">160,223</div><div class="lb-unit">steps this week</div></div>
+            </div>
+            <div class="lb-ellipsis">&middot;&middot;&middot;</div>
+            <div class="lb-item highlighted">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div><div class="lb-owner">@watson-golden</div></div>
+              <div class="lb-right"><div class="lb-rank">#16</div><div class="lb-steps">112,448</div><div class="lb-unit">steps this week</div></div>
+            </div>
+            <div class="lb-ellipsis">&middot;&middot;&middot;</div>
+            <div class="lb-item demote-zone">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Jessie</div><div class="lb-owner">@jessie-pup</div></div>
+              <div class="lb-right"><div class="lb-rank">#41 <span class="zone-dot down"></span></div><div class="lb-steps">14,182</div><div class="lb-unit">steps this week</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="compare-caption">
+          <strong>Watson is #16 of 41</strong> in his Bronze League — all Golden Retrievers from Austin. The #1 dog (Finn, 244K) is a real neighbor's Golden Retriever. Top 8 promote to Silver on Sunday.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================= -->
+<!-- SECTION 2: WATSON'S JOURNEY OVER 4 WEEKS  -->
+<!-- ========================================= -->
+<section class="section" id="journey" style="background: var(--gray-50);">
+  <div class="page-container">
+    <div class="section-eyebrow">Week by Week</div>
+    <div class="section-title">Watson's 4-Week Journey</div>
+    <div class="section-desc">Same dog, same steps. In today's system, Watson is invisible. In leagues, he has a story.</div>
+
+    <div class="compare-row">
+      <!-- CURRENT: 4 WEEKS OF NOTHING -->
+      <div class="compare-side">
+        <div class="compare-label current">Today: Watson's 4 Weeks</div>
+        <div class="phone">
+          <div class="status-bar"><span class="time">9:41</span><span class="status-icons">&#9679;&#9679;&#9679;&#9679; &#9681;</span></div>
+          <div class="app-header"><span class="back">&lsaquo;</span><span class="gear">&#9881;</span></div>
+          <div class="group-name">Brooklyn Dogs</div>
+          <div class="stats-row">
+            <div class="stat-item"><div class="val">821</div><div class="lbl">Dogs</div></div>
+          </div>
+          <div class="lb-list" style="padding-top: 8px;">
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 1</div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px;">#347</div><div class="lb-steps">112,448</div><div class="lb-unit">steps</div></div>
+            </div>
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 2</div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px;">#339</div><div class="lb-steps">202,116</div><div class="lb-unit">steps &middot; +89K</div></div>
+            </div>
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 3</div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px;">#332</div><div class="lb-steps">264,109</div><div class="lb-unit">steps &middot; +62K</div></div>
+            </div>
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 4</div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px;">#328</div><div class="lb-steps">184,852</div><div class="lb-unit">steps</div></div>
+            </div>
+            <div class="callout problem" style="margin: 12px;">
+              Watson nearly <strong>tripled</strong> his output from Week 1 to Week 3. He moved from #347 to #328. <strong>19 spots in a month.</strong> Would you check rankings for that?
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-vs">vs</div>
+
+      <!-- LEAGUES: 4 WEEKS OF STORY -->
+      <div class="compare-side">
+        <div class="compare-label proposed">With Leagues: Watson's 4 Weeks</div>
+        <div class="phone">
+          <div class="status-bar"><span class="time">9:41</span><span class="status-icons">&#9679;&#9679;&#9679;&#9679; &#9681;</span></div>
+          <div class="app-header"><span class="back">&lsaquo;</span><span class="gear">&#9881;</span></div>
+          <div class="group-name">Austin Golden Retrievers</div>
+          <div class="lb-list" style="padding-top: 8px;">
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 1 &middot; <span class="tier-badge bronze" style="font-size: 10px;">&#x1F949; Bronze</span></div>
+            <div class="lb-item">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px;">#16 <span style="font-size:11px;color:var(--gray-400)">of 41</span></div><div class="lb-steps">112,448</div><div class="lb-unit">steps</div></div>
+            </div>
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 2 &middot; <span class="tier-badge bronze" style="font-size: 10px;">&#x1F949; Bronze</span></div>
+            <div class="lb-item promote-zone">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div><div class="lb-owner" style="color:var(--green);font-weight:600;">&#8593; Promoted next week</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px; color:var(--green);">#3 <span style="font-size:11px;">of 34</span></div><div class="lb-steps">202,116</div><div class="lb-unit">steps &middot; +89K</div></div>
+            </div>
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 3 &middot; <span class="tier-badge silver" style="font-size: 10px;">&#x1F948; Silver</span></div>
+            <div class="lb-item promote-zone">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div><div class="lb-owner" style="color:var(--green);font-weight:600;">&#8593; Promoted next week</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px; color:var(--green);">#1 <span style="font-size:11px;">of 24</span></div><div class="lb-steps">264,109</div><div class="lb-unit">steps &middot; +62K</div></div>
+            </div>
+            <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--gray-400);">WEEK 4 &middot; <span class="tier-badge gold" style="font-size: 10px;">&#x1F947; Gold</span></div>
+            <div class="lb-item" style="background: var(--gold-highlight); border: 1.5px solid var(--gold-border);">
+              <div class="lb-avatar">&#x1F415;</div>
+              <div class="lb-info"><div class="lb-name">Watson</div><div class="lb-owner" style="color:var(--gold-tier);font-weight:600;">&#x1F947; Gold League</div></div>
+              <div class="lb-right"><div class="lb-rank" style="font-size: 16px;">#2 <span style="font-size:11px;">of 6</span></div><div class="lb-steps">184,852</div><div class="lb-unit">steps</div></div>
+            </div>
+            <div class="callout solution" style="margin: 12px;">
+              Same dog. Same steps. Watson went from <strong>#16 in Bronze to #2 in Gold</strong> in 4 weeks. He was in the top-3 carousel twice. His owner got 3 push notifications and shared a promotion card.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================= -->
+<!-- SECTION 3: ENGAGEMENT MOMENTS             -->
+<!-- ========================================= -->
+<section class="section" id="moments">
+  <div class="page-container">
+    <div class="section-eyebrow">Engagement Moments</div>
+    <div class="section-title">Every Journey Creates Notifications</div>
+    <div class="section-desc">These are real moments from the simulation — each one is a push notification, a share opportunity, and a reason to open the app.</div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px; max-width: 440px; margin: 0 auto;">
+
+      <div style="font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em;">Sunday 11pm — End of Week 1</div>
+      <div class="notif-mockup">
+        <div class="notif-icon">&#x1F415;</div>
+        <div class="notif-content">
+          <div class="notif-app">Fi &middot; now</div>
+          <div class="notif-text"><strong>Finn promoted to Silver League!</strong> &#x1F948; Top 7 in Bronze this week. New competition starts Monday.</div>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em;">Wednesday — Mid-week nudge</div>
+      <div class="notif-mockup">
+        <div class="notif-icon">&#x1F415;</div>
+        <div class="notif-content">
+          <div class="notif-app">Fi &middot; 2h ago</div>
+          <div class="notif-text"><strong>Watson is #5 in Bronze League</strong> with 3 days left. Top 6 promote to Silver!</div>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em;">Sunday 11pm — End of Week 2</div>
+      <div class="notif-mockup">
+        <div class="notif-icon">&#x1F415;</div>
+        <div class="notif-content">
+          <div class="notif-app">Fi &middot; now</div>
+          <div class="notif-text"><strong>Watson's best week ever!</strong> &#x1F4AA; 202,116 steps — promoted to Silver League.</div>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em;">Sunday 11pm — End of Week 3</div>
+      <div class="notif-mockup">
+        <div class="notif-icon">&#x1F415;</div>
+        <div class="notif-content">
+          <div class="notif-app">Fi &middot; now</div>
+          <div class="notif-text"><strong>Birdie promoted to Silver!</strong> &#x1F948; Steady climbing pays off. 151,292 steps this week.</div>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em;">Sunday 11pm — Demotion (framed as fresh start)</div>
+      <div class="notif-mockup">
+        <div class="notif-icon">&#x1F415;</div>
+        <div class="notif-content">
+          <div class="notif-app">Fi &middot; now</div>
+          <div class="notif-text"><strong>Fresh start for Telli!</strong> New Silver League starts Monday. 22 dogs, new competition. Let's go! &#x1F4AA;</div>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em;">Sunday 11pm — End of Week 4</div>
+      <div class="notif-mockup">
+        <div class="notif-icon">&#x1F415;</div>
+        <div class="notif-content">
+          <div class="notif-app">Fi &middot; now</div>
+          <div class="notif-text"><strong>Finn reaches Diamond League!</strong> &#x1F451; Top Golden Retriever in Austin. 4 weeks, 5 tiers. Share this milestone?</div>
+        </div>
+      </div>
+
+      <div class="callout solution" style="margin-top: 12px;">
+        <strong>Today's system generates zero notifications.</strong> There's nothing to notify about — your rank barely moves. Leagues create 2&ndash;3 notification-worthy moments per dog per week: mid-week position updates, end-of-week promotions, personal bests, and share prompts.
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="page-footer">
+  All data from real Fi dogs &mdash; 83 Golden Retrievers, Austin TX, Jan 19 &ndash; Feb 15, 2026<br>
+  <span style="color:var(--gray-300)">Rankings Revamp &middot; UI Simulation</span>
+</footer>
+
+<script>
+(function() {
+  window.navTo = function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      var y = el.getBoundingClientRect().top + window.pageYOffset - 72;
+      window.scrollTo({top: y, behavior: 'smooth'});
+    }
+  };
+  var secs = ['today','leagues','journey','moments'];
+  var btns = document.querySelectorAll('.nav-pill');
+  window.addEventListener('scroll', function() {
+    var active = 0;
+    secs.forEach(function(id, i) {
+      var el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= 120) active = i;
+    });
+    btns.forEach(function(b, i) { b.classList.toggle('active', i === active); });
+  });
+})();
+</script>
+</body>
+</html>
